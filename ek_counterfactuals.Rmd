@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 ## Libraries
@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(tidyverse)
 ```
+
 ## Question 1
 
 ### Write down the model
@@ -150,6 +151,12 @@ Z_i(\hat{w}) = 0 \qquad \text{for all } i
 
 ## Question 2
 
+The trade data give the matrix of bilateral flows $X^0_{ni}$ directly, with
+`country_dest` indexing the buyer $n$ and `country_org` the seller $i$. Row sums
+are total spending and column sums are total income, from which I construct the
+expenditure shares $\pi^0_{ni}$, the income-to-spending ratios $y^0_n$, and the
+share of each country's sales going to each destination. The trade elasticity is
+set to $\theta = 4$.
 
 ```{r}
 #download the data
@@ -185,6 +192,12 @@ sales_share <- t(t(X0) / income)
 
 ## Question 3
 
+The shock is a 10% rise in Chinese productivity, $\hat{T}_{\text{China}} = 1.1$,
+with trade costs, transfers and labour forces held fixed. Transfers are
+denominated in US wages and the US wage is the numeraire, so
+$h(w^0\hat{w})/h(w^0) = 1$ and the transfer term in $Z_i$ is inert. I solve the
+system by iterating on excess demand until the largest $|Z_i|$ falls below
+$10^{-10}$.
 
 ### (a) Initial guess
 
@@ -209,6 +222,7 @@ what["USA"] <- 1
 
 what
 ```
+
 ### (b) Iteration
 
 ```{r q3b}
@@ -244,7 +258,12 @@ err_path <- err_path[1:b]
 b
 err_path[b]
 ```
+
 ### Convergence check
+
+The maximum error falls monotonically at every step, from $1.2 \times 10^{-2}$
+to below tolerance in 258 iterations. On a log scale the decline is close to
+linear, which is what a well-chosen $\kappa$ should produce.
 
 ```{r}
 # error falls monotonically at every step
@@ -299,6 +318,10 @@ results <- data.frame(
 results[order(-results$real_wage), ]
 ```
 
+China's real wage rises 2.4%. Every other country gains, but by less than 0.02%.
+Mexico is the only country whose nominal wage falls, since it competes directly
+with China in the US market; its real wage still rises because its price index
+falls further.
 
 ### Regressions
 
@@ -321,6 +344,7 @@ summary(lm(ln_real_exp ~ ln_pihat_ii, data = reg_data))
 summary(lm(ln_real_exp ~ ln_Phihat,   data = reg_data))
 summary(lm(ln_real_exp ~ pi0_china,   data = reg_data))
 ```
+
 The regression of the log real wage on $\ln\hat{\pi}_{ii}$ returns a coefficient
 of exactly $-0.25$ with $R^2 = 1$. This is not an empirical finding but an
 identity: for every country other than China $\hat{T}_i = 1$, so

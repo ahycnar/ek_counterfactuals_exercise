@@ -12,11 +12,11 @@ Chinese productivity under two alternative numeraires for those transfers.
 
 ## Contents
 
-- `ek_counterfactuals.Rmd` — derivation, code and write-up
-- `ek_counterfactuals.pdf` — knitted output
-- `data/bilateral_trade_country.csv` — bilateral trade flows, 2014 WIOT
-- `data/country_list.csv` — 41 country codes
-- `docs/CodingTask.pdf` — assignment
+- `ek_counterfactuals.Rmd` - derivation, code and write-up
+- `ek_counterfactuals.pdf` - knitted output
+- `data/bilateral_trade_country.csv` - bilateral trade flows, 2014 WIOT
+- `data/country_list.csv` - 41 country codes
+- `docs/CodingTask.pdf` - assignment
 
 ## Reproducing
 
