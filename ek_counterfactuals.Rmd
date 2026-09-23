@@ -1,0 +1,468 @@
+---
+title: "ek_counterfactuals"
+author: "Aleksander Hycnar"
+date: "2026-09-22"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries
+
+```{r}
+library(here)
+library(tidyverse)
+```
+## Question 1
+
+### Write down the model
+
+\begin{equation}
+\sum_{i} X^0_{ni} = \text{total spending of } n
+\label{eq:rowsum}
+\end{equation}
+
+\begin{equation}
+\sum_{d} X^0_{di} = \text{total sales, hence income, of } i = w^0_i L^0_i
+\label{eq:colsum}
+\end{equation}
+
+\begin{equation}
+F_i(z) = \exp\left(-T_i z^{-\theta}\right)
+\label{eq:frechet}
+\end{equation}
+
+\begin{equation}
+\Phi_n = \sum_{o=1}^{N} T_o \left(w_o d_{no}\right)^{-\theta},
+\qquad P_n = \gamma\, \Phi_n^{-1/\theta}
+\label{eq:phi}
+\end{equation}
+
+\begin{equation}
+\pi_{ni} = \frac{T_i \left(w_i d_{ni}\right)^{-\theta}}{\Phi_n}
+\label{eq:share}
+\end{equation}
+
+\begin{equation}
+w_i L_i = \sum_{n=1}^{N} \pi_{ni} X_n
+\label{eq:clearing}
+\end{equation}
+
+\begin{equation}
+X_n = w_n L_n + h(w) D_n, \qquad \sum_{n=1}^{N} D_n = 0
+\label{eq:budget}
+\end{equation}
+
+\begin{equation}
+\pi'_{ni}
+= \frac{\hat{T}_i T^0_i \left(\hat{w}_i w^0_i \,\hat{d}_{ni} d^0_{ni}\right)^{-\theta}}
+       {\sum_{o} \hat{T}_o T^0_o \left(\hat{w}_o w^0_o \,\hat{d}_{no} d^0_{no}\right)^{-\theta}}
+\label{eq:pisub}
+\end{equation}
+
+\begin{equation}
+\underbrace{\hat{T}_i\left(\hat{w}_i\hat{d}_{ni}\right)^{-\theta}}_{\text{hats}}
+\cdot
+\underbrace{T^0_i\left(w^0_i d^0_{ni}\right)^{-\theta}}_{=\ \Phi^0_n \pi^0_{ni}}
+\label{eq:factor}
+\end{equation}
+
+\begin{equation}
+\hat{\pi}_{ni}
+= \frac{\pi'_{ni}}{\pi^0_{ni}}
+= \frac{\hat{T}_i \left(\hat{d}_{ni}\hat{w}_i\right)^{-\theta}}
+       {\sum_{o=1}^{N} \pi^0_{no}\, \hat{T}_o \left(\hat{d}_{no}\hat{w}_o\right)^{-\theta}}
+\label{eq:pihat}
+\end{equation}
+
+\begin{equation}
+\hat{\Phi}_n = \sum_{o=1}^{N} \pi^0_{no}\, \hat{T}_o
+\left(\hat{d}_{no}\hat{w}_o\right)^{-\theta},
+\qquad \hat{P}_n = \hat{\Phi}_n^{-1/\theta}
+\label{eq:phihat}
+\end{equation}
+
+\begin{equation}
+y^0_n \equiv \frac{w^0_n L^0_n}{X^0_n}
+= \frac{\sum_{i} X^0_{in}}{\sum_{i} X^0_{ni}}
+\label{eq:y0}
+\end{equation}
+
+\begin{equation}
+h(w^0) D_n = \left(1 - y^0_n\right) X^0_n
+\label{eq:transfer}
+\end{equation}
+
+\begin{align}
+w'_n L'_n &= \hat{w}_n \hat{L}_n \, w^0_n L^0_n
+           = \hat{w}_n \hat{L}_n \, y^0_n X^0_n \\[4pt]
+h(w')D'_n &= h(w^0\hat{w})\,\hat{D}_n D_n
+           = \frac{h(w^0\hat{w})}{h(w^0)}\,\hat{D}_n \cdot h(w^0)D_n
+           = \frac{h(w^0\hat{w})}{h(w^0)}\,\hat{D}_n \left(1-y^0_n\right) X^0_n
+\label{eq:terms}
+\end{align}
+
+\begin{equation}
+\frac{X'_n}{X^0_n}
+= y^0_n\, \hat{w}_n \hat{L}_n
++ \left(1-y^0_n\right) \frac{h(w^0\hat{w})}{h(w^0)}\, \hat{D}_n
+\label{eq:xhat}
+\end{equation}
+
+\begin{equation}
+\hat{w}_i \hat{L}_i = \sum_{n=1}^{N} \frac{\pi'_{ni} X'_n}{Y^0_i}
+\label{eq:clearhat}
+\end{equation}
+
+\begin{equation}
+\frac{\pi'_{ni} X'_n}{Y^0_i}
+= \underbrace{\frac{\pi'_{ni}}{\pi^0_{ni}}}_{\text{Step 1}}
+\cdot
+\underbrace{\frac{\pi^0_{ni} X^0_n}{Y^0_i}}_{=\ X^0_{ni} / \sum_d X^0_{di}}
+\cdot
+\underbrace{\frac{X'_n}{X^0_n}}_{\text{Step 2}}
+\label{eq:split}
+\end{equation}
+
+\begin{equation}
+Z_i(\hat{w}) \equiv
+\sum_{n=1}^{N}
+\frac{X^0_{ni}}{\sum_{d=1}^{N} X^0_{di}}
+\cdot
+\frac{\hat{T}_i\left(\hat{d}_{ni}\hat{w}_i\right)^{-\theta}}
+     {\sum_{o} \pi^0_{no}\hat{T}_o\left(\hat{d}_{no}\hat{w}_o\right)^{-\theta}}
+\left(
+ y^0_n \hat{w}_n \hat{L}_n
+ + \left(1-y^0_n\right)\frac{h(w^0\hat{w})}{h(w^0)}\hat{D}_n
+\right)
+- \hat{w}_i \hat{L}_i
+\label{eq:target}
+\end{equation}
+
+\begin{equation}
+Z_i(\hat{w}) = 0 \qquad \text{for all } i
+\label{eq:equil}
+\end{equation}
+
+## Question 2
+
+
+```{r}
+#download the data
+
+country_list <- read_csv(here("data", "country_list.csv"))
+trade <- read_csv(here("data", "bilateral_trade_country.csv"))
+
+#set variable names
+countries <- country_list$country
+N         <- length(countries)
+
+# trade elasticity, theta set to 4 as prescribed
+theta <- 4
+
+# building the matrix X0[n, i] = spending by n (destination) on goods from i (origin)
+X0 <- matrix(0, nrow = N, ncol = N,
+             dimnames = list(countries, countries))
+X0[cbind(trade$country_dest, trade$country_org)] <- trade$trade_flow2014
+
+# total spending of n = row sums; total income of i = column sums
+spending <- rowSums(X0)
+income   <- colSums(X0)
+
+# expenditure shares pi0[n, i]
+pi0 <- X0 / spending
+
+# income-to-spending ratios
+y0 <- income / spending
+
+# share of i's sales going to n
+sales_share <- t(t(X0) / income)
+```
+
+## Question 3
+
+
+### (a) Initial guess
+
+```{r q3a}
+# shocks: 10% rise in Chinese productivity, nothing else
+That <- rep(1, N)
+names(That) <- countries
+That["CHN"] <- 1.1
+
+Dhat <- rep(1, N)   
+Lhat <- rep(1, N)
+
+# h(w) = w_US and what_US = 1, so the numeraire ratio is one
+h_ratio <- 1
+
+# step b = 0: guess what_i = 1 for all i
+what <- rep(1, N)
+names(what) <- countries
+
+# US wage is the numeraire, fixed at 1 throughout
+what["USA"] <- 1
+
+what
+```
+### (b) Iteration
+
+```{r q3b}
+kappa <- 0.5
+tol   <- 1e-10
+B     <- 100000
+
+# store the error at each step
+err_path <- rep(NA, B)
+
+what <- rep(1, N)
+names(what) <- countries
+
+for (b in 1:B) {
+
+  Phihat <- as.vector(pi0 %*% (That * what^(-theta)))
+  pihat  <- matrix(That * what^(-theta), nrow = N, ncol = N, byrow = TRUE) / Phihat
+  Xhat   <- y0 * what * Lhat + (1 - y0) * h_ratio * Dhat
+
+  Z <- colSums(sales_share * pihat * Xhat) - what * Lhat
+  Z["USA"] <- 0
+
+  err_path[b] <- max(abs(Z))
+
+  if (err_path[b] < tol) break
+
+  what <- what + kappa * Z
+  what["USA"] <- 1
+}
+
+err_path <- err_path[1:b]
+
+b
+err_path[b]
+```
+### Convergence check
+
+```{r}
+# error falls monotonically at every step
+all(diff(err_path) < 0)
+
+# first few and last few errors
+head(err_path)
+tail(err_path)
+
+# log scale makes the geometric decline visible
+plot(err_path, type = "l", log = "y",
+     xlab = "iteration b",
+     ylab = "max |Z_i|  (log scale)",
+     main = "Convergence of the excess demand error")
+abline(h = tol, lty = 2)
+```
+
+## Question 4
+
+### Real wage and real expenditure
+
+```{r q4-results}
+# change in market access and price index
+Phihat <- as.vector(pi0 %*% (That * what^(-theta)))
+Phat   <- Phihat^(-1 / theta)
+names(Phihat) <- countries
+names(Phat)   <- countries
+
+# change in total spending
+Xhat <- y0 * what * Lhat + (1 - y0) * h_ratio * Dhat
+
+# change in domestic trade share
+pihat <- matrix(That * what^(-theta), nrow = N, ncol = N, byrow = TRUE) / Phihat
+dimnames(pihat) <- list(countries, countries)
+pihat_ii <- diag(pihat)
+
+# initial spending share on Chinese goods
+pi0_china <- pi0[, "CHN"]
+
+results <- data.frame(
+  country   = countries,
+  what      = what,
+  Xhat      = Xhat,
+  Phat      = Phat,
+  real_wage = what / Phat,
+  real_exp  = Xhat / Phat,
+  pihat_ii  = pihat_ii,
+  Phihat    = Phihat,
+  pi0_china = pi0_china
+)
+
+results[order(-results$real_wage), ]
+```
+
+
+### Regressions
+
+```{r q4-reg}
+# drop China
+reg_data <- subset(results, country != "CHN")
+
+reg_data$ln_real_wage <- log(reg_data$real_wage)
+reg_data$ln_real_exp  <- log(reg_data$real_exp)
+reg_data$ln_pihat_ii  <- log(reg_data$pihat_ii)
+reg_data$ln_Phihat    <- log(reg_data$Phihat)
+
+# real wage on each regressor separately
+summary(lm(ln_real_wage ~ ln_pihat_ii, data = reg_data))
+summary(lm(ln_real_wage ~ ln_Phihat,   data = reg_data))
+summary(lm(ln_real_wage ~ pi0_china,   data = reg_data))
+
+# real expenditure on each regressor separately
+summary(lm(ln_real_exp ~ ln_pihat_ii, data = reg_data))
+summary(lm(ln_real_exp ~ ln_Phihat,   data = reg_data))
+summary(lm(ln_real_exp ~ pi0_china,   data = reg_data))
+```
+The regression of the log real wage on $\ln\hat{\pi}_{ii}$ returns a coefficient
+of exactly $-0.25$ with $R^2 = 1$. This is not an empirical finding but an
+identity: for every country other than China $\hat{T}_i = 1$, so
+$\hat{\pi}_{ii} = \hat{w}_i^{-\theta}/\hat{\Phi}_i$ and
+$\hat{\pi}_{ii}^{-1/\theta} = \hat{w}_i/\hat{P}_i$. The estimate recovers
+$-1/\theta$ because the model says it must. I take the exact fit as a check
+that the solver is coded correctly.
+
+Market access enters with a negative coefficient, which looks wrong until one
+notices that $\hat{\Phi}_i$ is endogenous. Each country carries a large weight
+in its own $\Phi$, so a country whose wage rises sees its own $\hat{\Phi}$ fall.
+Taiwan has both the largest real wage gain and the lowest $\hat{\Phi}$. The
+partial effect of market access is positive, but the regression picks up the
+correlation with $\hat{w}_i$ and reverses the sign.
+
+The initial Chinese import share gives the cleanest result: a coefficient of
+0.0037 with an $R^2$ of 0.73. Countries that bought more from China to begin
+with gain more, because the productivity improvement reaches them through
+cheaper imports in proportion to how much of their spending goes to Chinese
+goods. The real expenditure regressions behave the same way, except that the
+coefficient on $\ln\hat{\pi}_{ii}$ is $-0.286$ rather than $-0.25$. The ACR
+identity holds for real income, not real expenditure, and the gap between them
+is the transfer.
+
+## Question 5
+
+### Solve with the Chinese wage as the transfer numeraire
+
+```{r q5-solve}
+kappa <- 0.5
+tol   <- 1e-10
+B     <- 100000
+
+# store the error at each step
+err_path2 <- rep(NA, B)
+
+what2 <- rep(1, N)
+names(what2) <- countries
+
+for (b in 1:B) {
+
+  Phihat2 <- as.vector(pi0 %*% (That * what2^(-theta)))
+  pihat2  <- matrix(That * what2^(-theta), nrow = N, ncol = N, byrow = TRUE) / Phihat2
+
+  # h(w0 what) / h(w0) = what_China
+  h_ratio2 <- what2["CHN"]
+
+  Xhat2 <- y0 * what2 * Lhat + (1 - y0) * h_ratio2 * Dhat
+
+  Z2 <- colSums(sales_share * pihat2 * Xhat2) - what2 * Lhat
+  Z2["USA"] <- 0
+
+  err_path2[b] <- max(abs(Z2))
+
+  if (err_path2[b] < tol) break
+
+  what2 <- what2 + kappa * Z2
+  what2["USA"] <- 1
+}
+
+err_path2 <- err_path2[1:b]
+
+b
+err_path2[b]
+```
+
+### Convergence check
+
+```{r q5-convergence}
+all(diff(err_path2) < 0)
+
+head(err_path2)
+tail(err_path2)
+
+plot(err_path2, type = "l", log = "y",
+     xlab = "iteration b",
+     ylab = "max |Z_i|  (log scale)",
+     main = "Convergence with the Chinese wage numeraire")
+abline(h = tol, lty = 2)
+```
+
+### Real variables
+
+```{r}
+Phihat2 <- as.vector(pi0 %*% (That * what2^(-theta)))
+Phat2   <- Phihat2^(-1 / theta)
+names(Phat2) <- countries
+
+h_ratio2 <- what2["CHN"]
+Xhat2    <- y0 * what2 * Lhat + (1 - y0) * h_ratio2 * Dhat
+
+results2 <- data.frame(
+  country    = countries,
+  what2      = what2,
+  Phat2      = Phat2,
+  real_wage2 = what2 / Phat2,
+  real_exp2  = Xhat2 / Phat2
+)
+
+results2[order(-results2$real_wage2), ]
+```
+
+### Comparison with item 1.iii
+
+```{r}
+compare <- data.frame(
+  country        = countries,
+  y0             = y0,
+  real_wage_US   = results$real_wage,
+  real_wage_CHN  = results2$real_wage2,
+  diff_wage      = results2$real_wage2 - results$real_wage,
+  real_exp_US    = results$real_exp,
+  real_exp_CHN   = results2$real_exp2,
+  diff_exp       = results2$real_exp2 - results$real_exp
+)
+
+compare[order(-abs(compare$diff_wage)), ]
+
+# the difference lines up with the sign of the trade imbalance
+cor(compare$diff_wage, compare$y0)
+plot(compare$y0, compare$diff_wage,
+     xlab = "y0 (income / spending)",
+     ylab = "change in real wage: China numeraire minus US numeraire")
+abline(h = 0, lty = 2)
+```
+
+Switching the numeraire changes almost nothing for China but reshuffles
+everyone else along a single dimension. The correlation between the change in
+the real wage and $y^0_n$ is $-0.975$. The reason is that only one term in the
+system differs: $(1-y^0_n)\,\hat{w}_{\text{China}}\,\hat{D}_n$. Since
+$\hat{w}_{\text{China}} > 1$, every transfer is now worth more in real terms.
+Deficit countries have $1 - y^0_n > 0$ and receive that transfer, so they spend
+more and their wage rises. Surplus countries pay it and lose.
+
+Ireland and the Netherlands run the largest surpluses in the sample
+($y^0 = 1.11$ and $1.08$) and lose the most. Greece and the rest-of-world
+aggregate run the largest deficits and gain the most. The effects on real
+expenditure are roughly ten times larger than on real wages, up to 0.26
+percentage points for Ireland, because the transfer enters spending directly
+and reaches wages only through general equilibrium.
+
+The magnitudes are small here because 2014 imbalances are modest, with $y^0$
+ranging from 0.95 to 1.11. The point is that the choice of $h(w)$ is not a
+harmless normalisation. It fixes the real value of international transfers and
+therefore redistributes between debtors and creditors.
